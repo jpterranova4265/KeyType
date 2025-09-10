@@ -28,9 +28,9 @@
     word-break: break-word;
   }
 
-  #keyboard, #menu {
+  #keyboard, #menu, #numbers {
     flex: 1;
-    display: flex;
+    display: none;
     flex-direction: column;
     justify-content: space-evenly;
     padding: 10px;
@@ -45,8 +45,8 @@
   .key {
     flex: 1;
     margin: 3px;
-    font-size: 8vw;
-    padding: 20px;
+    font-size: 6vw;   /* BIGGER letters */
+    padding: 40px;    /* taller keys */
     text-align: center;
     background: black;
     color: white;
@@ -64,9 +64,14 @@
     flex: 2;
   }
 
+  .control {
+    font-size: 5vw;   /* larger for control row */
+    padding: 50px;    /* extra tall */
+  }
+
   .menu-btn {
-    font-size: 4vw;
-    padding: 30px;
+    font-size: 6vw;
+    padding: 40px;
     background: black;
     color: white;
     border-radius: 8px;
@@ -80,7 +85,7 @@
 <div id="display"></div>
 
 <!-- Menu Screen -->
-<div id="menu">
+<div id="menu" style="display:flex;">
   <div style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center;">
     <div class="menu-btn" onclick="chooseLayout('ABCD')">ABC Layout</div>
     <div class="menu-btn" onclick="chooseLayout('QWERTY')">QWERTY Layout</div>
@@ -88,12 +93,16 @@
 </div>
 
 <!-- Keyboard -->
-<div id="keyboard" style="display:none;"></div>
+<div id="keyboard"></div>
+
+<!-- Numbers Pad -->
+<div id="numbers"></div>
 
 <script>
   const display = document.getElementById('display');
   const keyboardDiv = document.getElementById('keyboard');
   const menuDiv = document.getElementById('menu');
+  const numbersDiv = document.getElementById('numbers');
   let text = "";
   let currentLayout = "ABCD";
 
@@ -111,19 +120,33 @@
     ]
   };
 
-  const numberRow = ["1","2","3","4","5","6","7","8","9","0"];
-  const controlRow = ["SPACE","DELETE","CLEAR","READ","MENU"];
+  const controlRow = ["SPACE","DELETE","CLEAR","READ","123","MENU"];
 
   function chooseLayout(layout) {
     currentLayout = layout;
     menuDiv.style.display = "none";
+    numbersDiv.style.display = "none";
     keyboardDiv.style.display = "flex";
     buildKeyboard();
   }
 
   function backToMenu() {
     keyboardDiv.style.display = "none";
+    numbersDiv.style.display = "none";
     menuDiv.style.display = "flex";
+  }
+
+  function showNumbers() {
+    keyboardDiv.style.display = "none";
+    menuDiv.style.display = "none";
+    numbersDiv.style.display = "flex";
+    buildNumbers();
+  }
+
+  function showLetters() {
+    numbersDiv.style.display = "none";
+    keyboardDiv.style.display = "flex";
+    buildKeyboard();
   }
 
   function buildKeyboard() {
@@ -142,29 +165,51 @@
       keyboardDiv.appendChild(rowDiv);
     });
 
-    // Numbers
-    const numRowDiv = document.createElement("div");
-    numRowDiv.className = "row";
-    numberRow.forEach(num => {
-      const keyDiv = document.createElement("div");
-      keyDiv.className = "key";
-      keyDiv.innerText = num;
-      keyDiv.onclick = () => pressKey(num);
-      numRowDiv.appendChild(keyDiv);
-    });
-    keyboardDiv.appendChild(numRowDiv);
-
     // Control Row
     const controlRowDiv = document.createElement("div");
     controlRowDiv.className = "row";
     controlRow.forEach(c => {
       const keyDiv = document.createElement("div");
-      keyDiv.className = "key wide";
+      keyDiv.className = "key wide control";
       keyDiv.innerText = c;
       keyDiv.onclick = () => handleControl(c);
       controlRowDiv.appendChild(keyDiv);
     });
     keyboardDiv.appendChild(controlRowDiv);
+  }
+
+  function buildNumbers() {
+    numbersDiv.innerHTML = "";
+
+    const rows = [
+      ["1","2","3"],
+      ["4","5","6"],
+      ["7","8","9"],
+      ["0"]
+    ];
+
+    rows.forEach(row => {
+      const rowDiv = document.createElement("div");
+      rowDiv.className = "row";
+      row.forEach(num => {
+        const keyDiv = document.createElement("div");
+        keyDiv.className = "key";
+        keyDiv.innerText = num;
+        keyDiv.onclick = () => pressKey(num);
+        rowDiv.appendChild(keyDiv);
+      });
+      numbersDiv.appendChild(rowDiv);
+    });
+
+    // Back to letters
+    const controlRowDiv = document.createElement("div");
+    controlRowDiv.className = "row";
+    const backBtn = document.createElement("div");
+    backBtn.className = "key wide control";
+    backBtn.innerText = "ABC";
+    backBtn.onclick = () => showLetters();
+    controlRowDiv.appendChild(backBtn);
+    numbersDiv.appendChild(controlRowDiv);
   }
 
   function pressKey(val) {
@@ -186,6 +231,8 @@
       }
     } else if (action === "MENU") {
       backToMenu();
+    } else if (action === "123") {
+      showNumbers();
     }
     updateDisplay();
   }
